@@ -1,10 +1,17 @@
 import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
+import uuidv4 from 'uuid/v4';
 
 const app = express();
 
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  req.me = users[1];
+  next();
+});
 
 app.get('/', (req, res) => {
   return res.send('Received a GET HTTP method');
@@ -67,6 +74,37 @@ app.get('/messages', (req, res) => {
 });
 app.get('/messages/:messageId', (req, res) => {
   return res.send(messages[req.params.messageId]);
+});
+app.post('/messages', (req, res) => {
+  const id = uuidv4();
+  const message = {
+    id,
+    text: req.body.text,
+    userId: req.me.id,
+  };
+  messages[id] = message;
+  return res.send(message);
+});
+app.put('/messages/:messageId', (req, res) => {
+  let message = messages[req.params.messageId];
+  if (message) {
+    message.text = req.body.text;
+    return res.send(message);
+  }
+  else {
+    return res.status(404).send(`messageId ${req.params.messageId} not found`);
+  }
+});
+app.delete('/messages/:messageId', (req, res) => {
+  const {
+    [req.params.messageId]: message,
+    ...otherMessages
+  } = messages;
+  messages = otherMessages;
+  return res.send(message);
+});
+app.get('/session', (req, res) => {
+  return res.send(users[req.me.id]);
 });
 
 app.listen(process.env.PORT, () =>
