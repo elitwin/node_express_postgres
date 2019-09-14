@@ -3,7 +3,7 @@
   "extends": "eslint:recommended",
   "rules": {
     "max-len": [1, 80, 2, {ignoreComments: false}]
-  }
+  },
   "env": {
     "browser": true,
     "node": true
